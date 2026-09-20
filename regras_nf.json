@@ -1,0 +1,9 @@
+[
+    {
+        "local": "ananindeua",
+        "tipo": "regiao",
+        "codigo": "53",
+        "emitir": "N",
+        "observacao": "regiao proxima nao emitir, exceto por solicitacao"
+    }
+]
