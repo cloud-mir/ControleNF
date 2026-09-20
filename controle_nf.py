@@ -1,8 +1,22 @@
 import json
 import os
 
-ARQUIVO = "regras_nf.json"
 
+# ============================================================
+# CONFIGURAÇÃO DO ARQUIVO
+# ============================================================
+
+PASTA_CONTROLE_NF = os.path.dirname(os.path.abspath(__file__))
+
+ARQUIVO = os.path.join(
+    PASTA_CONTROLE_NF,
+    "regras_nf.json"
+)
+
+
+# ============================================================
+# CARREGAR E SALVAR REGRAS
+# ============================================================
 
 def carregar_regras():
     if os.path.exists(ARQUIVO):
@@ -14,8 +28,17 @@ def carregar_regras():
 
 def salvar_regras():
     with open(ARQUIVO, "w", encoding="utf-8") as arquivo:
-        json.dump(regras, arquivo, ensure_ascii=False, indent=4)
+        json.dump(
+            regras,
+            arquivo,
+            ensure_ascii=False,
+            indent=4
+        )
 
+
+# ============================================================
+# CADASTRAR REGRA
+# ============================================================
 
 def cadastrar_regra():
     print("\n========== CADASTRAR REGRA ==========")
@@ -61,13 +84,16 @@ def cadastrar_regra():
     salvar_regras()
 
     print("\nRegra cadastrada com sucesso!")
+
     mostrar_regra(regra)
 
 
-def consultar_regra():
-    print("\n========== CONSULTAR ==========")
+# ============================================================
+# CONSULTAR REGRA
+# ============================================================
 
-    pesquisa = input("Digite o local ou região: ").strip().lower()
+def consultar_regra(pesquisa):
+    pesquisa = pesquisa.strip().lower()
 
     encontrados = []
 
@@ -75,13 +101,12 @@ def consultar_regra():
         if pesquisa in regra["local"].lower():
             encontrados.append(regra)
 
-    if len(encontrados) == 0:
-        print("\nNenhuma regra encontrada.")
-        return
+    return encontrados
 
-    for regra in encontrados:
-        mostrar_regra(regra)
 
+# ============================================================
+# MOSTRAR REGRA
+# ============================================================
 
 def mostrar_regra(regra):
     print("\n--------------------------------")
@@ -97,6 +122,10 @@ def mostrar_regra(regra):
     print("Observação:", regra["observacao"])
     print("--------------------------------")
 
+
+# ============================================================
+# VER TABELA
+# ============================================================
 
 def ver_tabela():
     print("\n================ TABELA DE REGRAS ================")
@@ -133,6 +162,10 @@ def ver_tabela():
     print("-" * 64)
 
 
+# ============================================================
+# ALTERAR REGRA
+# ============================================================
+
 def alterar_regra():
     print("\n========== ALTERAR REGRA ==========")
 
@@ -143,7 +176,10 @@ def alterar_regra():
     ver_tabela()
 
     try:
-        numero = int(input("Digite o Nº da regra: "))
+        numero = int(
+            input("Digite o Nº da regra: ")
+        )
+
     except ValueError:
         print("Digite um número válido.")
         return
@@ -158,11 +194,19 @@ def alterar_regra():
 
     print("\nPressione ENTER para manter o valor atual.")
 
-    local = input(f"Local [{regra['local']}]: ").strip()
+    local = input(
+        f"Local [{regra['local']}]: "
+    ).strip()
 
-    tipo = input(f"Tipo [{regra['tipo']}]: ").strip()
+    tipo = input(
+        f"Tipo [{regra['tipo']}]: "
+    ).strip()
 
-    print(f"\nDecisão atual: {'EMITIR NF' if regra['emitir'] == 'S' else 'NÃO EMITIR NF'}")
+    print(
+        f"\nDecisão atual: "
+        f"{'EMITIR NF' if regra['emitir'] == 'S' else 'NÃO EMITIR NF'}"
+    )
+
     print("1 - Emitir NF (Código 1)")
     print("2 - Não emitir NF (Código 53)")
     print("ENTER - Manter atual")
@@ -195,6 +239,10 @@ def alterar_regra():
     print("\nRegra alterada com sucesso!")
 
 
+# ============================================================
+# EXCLUIR REGRA
+# ============================================================
+
 def excluir_regra():
     print("\n========== EXCLUIR REGRA ==========")
 
@@ -205,7 +253,10 @@ def excluir_regra():
     ver_tabela()
 
     try:
-        numero = int(input("Digite o Nº da regra: "))
+        numero = int(
+            input("Digite o Nº da regra: ")
+        )
+
     except ValueError:
         print("Digite um número válido.")
         return
@@ -219,6 +270,7 @@ def excluir_regra():
     regra = regras[indice]
 
     print("\nVocê selecionou:")
+
     mostrar_regra(regra)
 
     confirmacao = input(
@@ -227,14 +279,22 @@ def excluir_regra():
 
     if confirmacao == "S":
         regras.pop(indice)
+
         salvar_regras()
+
         print("Regra excluída.")
+
     else:
         print("Exclusão cancelada.")
 
 
+# ============================================================
+# MENU
+# ============================================================
+
 def menu():
     while True:
+
         print("\n")
         print("========================================")
         print("            CONTROLE DE NF")
@@ -250,28 +310,62 @@ def menu():
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
+
             cadastrar_regra()
 
         elif opcao == "2":
-            consultar_regra()
+
+            pesquisa = input(
+                "Digite o local ou região: "
+            ).strip()
+
+            encontrados = consultar_regra(
+                pesquisa
+            )
+
+            if len(encontrados) == 0:
+
+                print("\nNenhuma regra encontrada.")
+
+            else:
+
+                for regra in encontrados:
+
+                    mostrar_regra(regra)
 
         elif opcao == "3":
+
             ver_tabela()
 
         elif opcao == "4":
+
             alterar_regra()
 
         elif opcao == "5":
+
             excluir_regra()
 
         elif opcao == "0":
+
             print("\nPrograma encerrado.")
+
             break
 
         else:
+
             print("\nOpção inválida.")
 
 
+# ============================================================
+# CARREGAR REGRAS
+# ============================================================
+
 regras = carregar_regras()
 
-menu()
+
+# ============================================================
+# EXECUTAR MENU SOMENTE QUANDO FOR RODADO DIRETAMENTE
+# ============================================================
+
+if __name__ == "__main__":
+    menu()

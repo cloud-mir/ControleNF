@@ -1,9 +1,16 @@
 [
     {
-        "local": "ananindeua",
-        "tipo": "regiao",
+        "local": "Ananindeua",
+        "tipo": "Região",
         "codigo": "53",
         "emitir": "N",
-        "observacao": "regiao proxima nao emitir, exceto por solicitacao"
+        "observacao": "Região próxima, não emite NF-e, exceto por solicitação."
+    },
+    {
+        "local": "Belém",
+        "tipo": "Região",
+        "codigo": "53",
+        "emitir": "N",
+        "observacao": "Região próxima, não emitir NF-e, exceto por solicitação"
     }
 ]
