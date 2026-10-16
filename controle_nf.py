@@ -1,6 +1,21 @@
 import json
 import os
-import psycopg
+
+# Usa o pool compartilhado do app (web.db) quando disponível;
+# fallback para psycopg.connect se rodado isolado.
+try:
+    from web.db import conectar_banco
+except ImportError:
+    import psycopg
+
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+
+    def conectar_banco():
+        if not DATABASE_URL:
+            raise RuntimeError(
+                "DATABASE_URL não foi configurada."
+            )
+        return psycopg.connect(DATABASE_URL)
 
 
 # ============================================================
@@ -22,23 +37,6 @@ DATABASE_URL = os.environ.get(
 
 
 # ============================================================
-# CONEXÃO COM O BANCO
-# ============================================================
-
-def conectar_banco():
-
-    if not DATABASE_URL:
-
-        raise RuntimeError(
-            "DATABASE_URL não foi configurada."
-        )
-
-    return psycopg.connect(
-        DATABASE_URL
-    )
-
-
-# ============================================================
 # CRIAR TABELA
 # ============================================================
 
@@ -55,8 +53,20 @@ def criar_tabela():
                     tipo TEXT,
                     codigo TEXT,
                     emitir TEXT,
-                    observacao TEXT
+                    observacao TEXT,
+                    latitude DOUBLE PRECISION,
+                    longitude DOUBLE PRECISION
                 )
+            """)
+
+            cursor.execute("""
+                ALTER TABLE regras_nf
+                ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION
+            """)
+
+            cursor.execute("""
+                ALTER TABLE regras_nf
+                ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION
             """)
 
 
@@ -219,7 +229,9 @@ def carregar_regras():
                         tipo,
                         codigo,
                         emitir,
-                        observacao
+                        observacao,
+                        latitude,
+                        longitude
                     FROM regras_nf
                     ORDER BY id
                 """)
@@ -253,7 +265,11 @@ def carregar_regras():
 
             "emitir": resultado[4],
 
-            "observacao": resultado[5]
+            "observacao": resultado[5],
+
+            "latitude": float(resultado[6]) if resultado[6] is not None else None,
+
+            "longitude": float(resultado[7]) if resultado[7] is not None else None,
 
         })
 
@@ -317,15 +333,22 @@ def salvar_regras():
 
                 if regra_id is None:
 
+                    lat = regra.get("latitude")
+                    lng = regra.get("longitude")
+
                     cursor.execute("""
                         INSERT INTO regras_nf (
                             local,
                             tipo,
                             codigo,
                             emitir,
-                            observacao
+                            observacao,
+                            latitude,
+                            longitude
                         )
                         VALUES (
+                            %s,
+                            %s,
                             %s,
                             %s,
                             %s,
@@ -338,7 +361,9 @@ def salvar_regras():
                         tipo,
                         codigo,
                         emitir,
-                        observacao
+                        observacao,
+                        lat,
+                        lng,
                     ))
 
                     novo_id = cursor.fetchone()[0]
@@ -347,6 +372,9 @@ def salvar_regras():
 
                 else:
 
+                    lat = regra.get("latitude")
+                    lng = regra.get("longitude")
+
                     cursor.execute("""
                         UPDATE regras_nf
                         SET
@@ -354,7 +382,9 @@ def salvar_regras():
                             tipo = %s,
                             codigo = %s,
                             emitir = %s,
-                            observacao = %s
+                            observacao = %s,
+                            latitude = %s,
+                            longitude = %s
                         WHERE id = %s
                     """, (
                         local,
@@ -362,7 +392,9 @@ def salvar_regras():
                         codigo,
                         emitir,
                         observacao,
-                        regra_id
+                        lat,
+                        lng,
+                        regra_id,
                     ))
 
             # ------------------------------------------------
